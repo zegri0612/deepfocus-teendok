@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Deep Focus — Weboldal teendők</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#111111; --card:#1a1a1a; --card2:#151515; --muted:#222222;
+    --fg:#f6f6f6; --fg2:#a8a8a8; --fg3:#6f6f6f;
+    --border:rgba(255,255,255,.10); --border2:rgba(255,255,255,.06);
+    --neon:#ff6ad5; --neon-soft:rgba(255,106,213,.14);
+    --red:#ff5a6e; --orange:#ffa24a; --yellow:#ffd84a; --green:#4ade80; --grey:#9aa0a6;
+    --mono:"Roboto Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:"Inter",ui-sans-serif,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  body{min-height:100vh;background:
+    radial-gradient(900px 500px at 85% -10%, rgba(255,106,213,.10), transparent 60%),
+    radial-gradient(700px 400px at -10% 110%, rgba(255,106,213,.06), transparent 60%), var(--bg)}
+  .wrap{max-width:880px;margin:0 auto;padding:28px 18px 120px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:34px}
+  .logo{font-family:var(--mono);font-weight:700;font-size:22px;letter-spacing:.02em}
+  .logo b{color:var(--neon);text-shadow:0 0 12px rgba(255,106,213,.6)}
+  .rec{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg2);border:1px solid var(--border);border-radius:999px;padding:6px 12px;background:rgba(255,255,255,.03)}
+  .rec i{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);animation:blink 1.6s infinite}
+  @keyframes blink{50%{opacity:.25}}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--fg2);display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--neon);box-shadow:0 0 10px var(--neon)}
+  h1{font-family:var(--mono);font-weight:600;font-size:clamp(30px,6vw,46px);line-height:1.08;margin:14px 0 12px;letter-spacing:-.01em}
+  .lead{color:var(--fg2);font-size:15px;line-height:1.6;margin:0 0 26px;max-width:640px}
+  .total{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:20px 22px;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;margin-bottom:22px}
+  .big{font-family:var(--mono);font-size:44px;font-weight:600;line-height:1}
+  .big small{font-size:16px;color:var(--fg2);margin-left:4px}
+  .bar{height:6px;background:var(--muted);border-radius:99px;overflow:hidden}
+  .bar>span{display:block;height:100%;background:var(--neon);box-shadow:0 0 14px var(--neon);border-radius:99px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+  .total .meta{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--fg3);margin-top:10px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:26px}
+  .chip{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg2);background:transparent;border:1px solid var(--border);border-radius:999px;padding:9px 14px;cursor:pointer;min-height:38px;transition:.2s}
+  .chip:hover{color:var(--fg);border-color:rgba(255,255,255,.25)}
+  .chip.on{color:var(--neon);border-color:var(--neon);background:var(--neon-soft)}
+  section.grp{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:22px;margin-bottom:16px;overflow:hidden}
+  .ghead{display:flex;align-items:center;gap:12px;padding:18px 20px 14px;cursor:pointer;user-select:none}
+  .dot{width:10px;height:10px;border-radius:50%;flex:none;box-shadow:0 0 10px currentColor;background:currentColor}
+  .gtitle{flex:1;min-width:0}
+  .gtitle h2{font-family:var(--mono);font-size:16px;font-weight:600;margin:0;line-height:1.3}
+  .gtitle p{margin:3px 0 0;font-size:13px;color:var(--fg3)}
+  .gcount{font-family:var(--mono);font-size:12px;color:var(--fg2);white-space:nowrap}
+  .chev{color:var(--fg3);transition:transform .25s;font-size:12px}
+  section.closed .chev{transform:rotate(-90deg)}
+  section.closed .items,section.closed .gbar,section.closed .addrow{display:none}
+  .gbar{height:2px;margin:0 20px 6px;background:var(--muted);border-radius:2px;overflow:hidden}
+  .gbar>span{display:block;height:100%;background:var(--neon);transition:width .4s}
+  ul.items{list-style:none;margin:0;padding:4px 8px 8px}
+  li.item{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:12px;border-radius:14px;transition:background .2s}
+  li.item:hover{background:rgba(255,255,255,.025)}
+  .num{font-family:var(--mono);font-size:11px;color:var(--fg3);margin-right:6px}
+  .cb{appearance:none;width:22px;height:22px;margin:1px 0 0;border:1.5px solid rgba(255,255,255,.28);border-radius:7px;display:grid;place-content:center;cursor:pointer;transition:.2s;background:transparent;flex:none}
+  .cb::after{content:"";width:10px;height:6px;border-left:2px solid #111;border-bottom:2px solid #111;transform:rotate(-45deg) translate(1px,-1px) scale(0);transition:transform .2s}
+  .cb:checked{background:var(--neon);border-color:var(--neon);box-shadow:0 0 12px rgba(255,106,213,.55)}
+  .cb:checked::after{transform:rotate(-45deg) translate(1px,-1px) scale(1)}
+  .cb:focus-visible,.chip:focus-visible,.icon:focus-visible{outline:2px solid var(--neon);outline-offset:2px}
+  .txt{min-width:0}
+  .t{font-weight:600;font-size:15px;line-height:1.45;outline:none;border-radius:6px;padding:1px 3px;margin:-1px -3px;word-break:break-word}
+  .d{color:var(--fg2);font-size:13.5px;line-height:1.5;margin-top:3px;outline:none;border-radius:6px;padding:1px 3px;margin-left:-3px;word-break:break-word}
+  .d:empty::before{content:"+ megjegyzés";color:var(--fg3);font-style:italic}
+  [contenteditable]:focus{background:rgba(255,106,213,.08);box-shadow:0 0 0 1px rgba(255,106,213,.4)}
+  li.done .t{color:var(--fg3);text-decoration:line-through;text-decoration-color:rgba(255,106,213,.6)}
+  li.done .d{color:var(--fg3)}
+  .who{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg3);border:1px solid var(--border2);border-radius:99px;padding:2px 8px;margin-top:6px}
+  .icon{background:none;border:0;color:var(--fg3);cursor:pointer;font-size:16px;width:32px;height:32px;border-radius:8px;opacity:.0;transition:.2s}
+  li.item:hover .icon,li.item:focus-within .icon{opacity:1}
+  .icon:hover{color:var(--red);background:rgba(255,90,110,.08)}
+  @media (hover:none){.icon{opacity:.6}}
+  .addrow{display:flex;gap:8px;padding:6px 20px 18px}
+  .addrow input{flex:1;min-width:0;background:var(--muted);border:1px solid var(--border2);border-radius:12px;color:var(--fg);font:inherit;font-size:14px;padding:11px 14px;outline:none}
+  .addrow input:focus{border-color:var(--neon)}
+  .addrow button{font-family:var(--mono);font-size:12px;font-weight:600;background:var(--fg);color:#111;border:0;border-radius:12px;padding:0 16px;cursor:pointer;min-height:44px}
+  footer{margin-top:30px;color:var(--fg3);font-size:12.5px;line-height:1.6}
+  footer code{font-family:var(--mono);color:var(--fg2)}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--fg);color:#111;font-family:var(--mono);font-size:12px;padding:10px 16px;border-radius:99px;opacity:0;transition:.3s;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (max-width:560px){.total{grid-template-columns:1fr}.big{font-size:38px}.ghead{padding:16px}.addrow{padding:6px 16px 16px}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">DE<b>≡</b>PF<b>◘</b>CUS</div>
+    <span class="rec"><i></i>Belső · Teendők</span>
+  </header>
+
+  <div class="eyebrow">deepfocus.hu</div>
+  <h1>Weboldal&nbsp;teendők</h1>
+  <p class="lead">Minden, ami még hátravan az oldallal. Pipáld ki, ami kész, kattints bármelyik szövegre a szerkesztéshez, és adj hozzá új pontot a csoportok alján.</p>
+
+  <div class="total">
+    <div class="big" id="pct">0<small>%</small></div>
+    <div>
+      <div class="bar"><span id="totalbar" style="width:0"></span></div>
+      <div class="meta"><span id="countTxt">0 / 0 kész</span><span id="saved">Mentve ebben a böngészőben</span></div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button class="chip on" data-f="all">Mind</button>
+    <button class="chip" data-f="open">Nyitott</button>
+    <button class="chip" data-f="done">Kész</button>
+    <button class="chip" id="exportBtn" title="Állapot letöltése fájlba">⤓ Mentés fájlba</button>
+    <button class="chip" id="importBtn" title="Állapot betöltése fájlból">⤒ Betöltés</button>
+    <button class="chip" id="resetBtn" title="Vissza az eredeti listára">↺ Alaphelyzet</button>
+    <input type="file" id="importFile" accept="application/json" hidden>
+  </div>
+
+  <main id="groups"></main>
+
+  <footer>
+    A pipák és szerkesztések ebben a böngészőben mentődnek. Ha a társadnak is át akarod adni az állapotot: <code>⤓ Mentés fájlba</code>, küldd el neki a fájlt, ő pedig <code>⤒ Betöltés</code>.
+  </footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = "deepfocus-todo-v1";
+const DEFAULT = [
+  { id:"g1", color:"var(--red)", title:"Most rögtön", sub:"A mai munka élesítése", items:[
+    { t:"Publish a Lovable-ben", d:"Élesedik: képoptimalizálás, kódtakarítás, rejtett árak, llms.txt.", who:"Csapat" },
+    { t:"Google-ellenőrzés a Publish után", d:"Rich Results Test: jól olvassa-e a Google az árakat és a cégadatokat.", who:"Claude" },
+  ]},
+  { id:"g2", color:"var(--orange)", title:"Infó kell tőletek → kódban megcsinálom", sub:"Elküldött adatok alapján, GitHubon", items:[
+    { t:"Közösségi profilok a cégadatokba", d:"Facebook, TikTok, YouTube, LinkedIn, Vimeo és Google Cégprofil linkjei.", who:"Infó: csapat · Kód: Claude" },
+    { t:"20 új Tudástár-kérdés", d:"Social media, reklámfilm, AI-videó, branding — témánként 5. Kell: social szerződési idő és havi mennyiség, reklámfilm javítási körök és felvétel-tulajdon, arculat logóváltozatok száma.", who:"Infó: csapat · Kód: Claude" },
+    { t:"Nyitvatartás a cégadatokba", d:"Ha szeretnénk, hogy a Google-ben is látszódjon.", who:"Infó: csapat · Kód: Claude" },
+  ]},
+  { id:"g3", color:"var(--yellow)", title:"Mobilnézet", sub:"Szüneteltetve — a lapozós szolgáltatás-rész nem kell", items:[
+    { t:"Hero: jobban olvasható szöveg a videó fölött", d:"" },
+    { t:"Kevesebb pink világító gomb", d:"Hogy az „Ajánlatkérés” emelkedjen ki." },
+    { t:"Számlálók azonnal a végleges számot mutassák", d:"" },
+    { t:"Egységes betűtípus a „márkád történetét…” idézetben", d:"" },
+    { t:"Apró feliratok nagyobbak", d:"10–12 px → legalább 13 px." },
+    { t:"Nagyobb kattintható felület", d:"Logósáv és menüpontok, minimum 44 px." },
+    { t:"HU/EN nyelvváltó a menübe", d:"Az alsó sávból kikerül." },
+    { t:"Oldal második felének mobilos átnézése", d:"Referenciák, árak, munkafolyamat, GYIK, űrlap." },
+  ]},
+  { id:"g4", color:"var(--green)", title:"Google- és AI-helyezés", sub:"Nem kód — nektek kell", items:[
+    { t:"Google Cégprofil teljesen kitöltve", d:"Kategória: Videógyártó cég, szolgáltatások árakkal, heti fotó/videó, posztok.", who:"Csapat" },
+    { t:"Google-értékelések kérése", d:"Minden lezárt munka után, lehetőleg szövegesen.", who:"Csapat" },
+    { t:"Magyar cégkatalógusok", d:"Arany Oldalak, Cylex, Firmania, Bing Places, Apple Business Connect.", who:"Csapat" },
+    { t:"Nemzetközi ügynökségkatalógusok", d:"Clutch, Sortlist, DesignRush, GoodFirms.", who:"Csapat" },
+    { t:"Linkek az ügyfelek oldalairól", d:"„Videó: Deep Focus” felirat linkkel.", who:"Csapat" },
+    { t:"Szakmai megjelenések", d:"Kreatív.hu beküldés, vendégcikk, pályázatok.", who:"Csapat" },
+    { t:"Listacikkek", d:"„Legjobb budapesti videógyártók” típusú cikkekbe bekerülni.", who:"Csapat" },
+  ]},
+  { id:"g5", color:"var(--grey)", title:"Apró technikai maradék", sub:"Nem sürgős", items:[
+    { t:"Nem használt csomagok törlése", d:"pl. motion, date-fns — a lockfile újragenerálásával együtt.", who:"Claude" },
+    { t:"Pontosabb típusok az e-mail-sablonokban", d:"6 helyen any.", who:"Claude" },
+    { t:"„Reverted to commit…” tisztázása Tomival", d:"Mi került vissza a GitHubon?", who:"Csapat" },
+  ]},
+];
+
+const uid = () => Math.random().toString(36).slice(2,9);
+const clone = o => JSON.parse(JSON.stringify(o));
+function withIds(groups){ groups.forEach(g=>g.items.forEach(i=>{ i.id ||= uid(); i.done ||= false; })); return groups; }
+
+let state, filter = "all";
+function load(){
+  try { const s = localStorage.getItem(KEY); if (s) return JSON.parse(s); } catch(e){}
+  return withIds(clone(DEFAULT));
+}
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(state)); flash("saved"); } catch(e){ document.getElementById("saved").textContent = "Nem sikerült menteni"; }
+}
+let closed = {};
+try { closed = JSON.parse(localStorage.getItem(KEY+"-closed") || "{}"); } catch(e){}
+
+const $ = s => document.querySelector(s);
+const esc = s => (s||"").replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function render(){
+  const root = $("#groups"); root.innerHTML = "";
+  let all=0, done=0, n=0;
+  state.forEach(g=>{
+    const gd = g.items.filter(i=>i.done).length, gt = g.items.length;
+    all+=gt; done+=gd;
+    const sec = document.createElement("section");
+    sec.className = "grp" + (closed[g.id] ? " closed":"");
+    sec.innerHTML = `
+      <div class="ghead" role="button" tabindex="0" aria-expanded="${!closed[g.id]}">
+        <span class="dot" style="color:${g.color}"></span>
+        <div class="gtitle"><h2>${esc(g.title)}</h2><p>${esc(g.sub||"")}</p></div>
+        <span class="gcount">${gd} / ${gt}</span><span class="chev">▼</span>
+      </div>
+      <div class="gbar"><span style="width:${gt?gd/gt*100:0}%"></span></div>
+      <ul class="items"></ul>
+      <form class="addrow"><input placeholder="Új teendő…" aria-label="Új teendő ide: ${esc(g.title)}"><button>Hozzáad</button></form>`;
+    const head = sec.querySelector(".ghead");
+    const toggle = ()=>{ closed[g.id] = !closed[g.id]; try{localStorage.setItem(KEY+"-closed",JSON.stringify(closed))}catch(e){} render(); };
+    head.onclick = toggle; head.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle();} };
+    const ul = sec.querySelector(".items");
+    g.items.forEach(it=>{
+      n++;
+      if (filter==="open" && it.done) return;
+      if (filter==="done" && !it.done) return;
+      const li = document.createElement("li");
+      li.className = "item" + (it.done?" done":"");
+      li.innerHTML = `
+        <input type="checkbox" class="cb" ${it.done?"checked":""} aria-label="Kész: ${esc(it.t)}">
+        <div class="txt">
+          <div class="t" contenteditable="plaintext-only" spellcheck="false"><span class="num" contenteditable="false">${String(n).padStart(2,"0")}</span>${esc(it.t)}</div>
+          <div class="d" contenteditable="plaintext-only" spellcheck="false">${esc(it.d)}</div>
+          ${it.who?`<span class="who">${esc(it.who)}</span>`:""}
+        </div>
+        <button class="icon" title="Törlés" aria-label="Törlés: ${esc(it.t)}">✕</button>`;
+      li.querySelector(".cb").onchange = e=>{ it.done = e.target.checked; save(); render(); };
+      const t = li.querySelector(".t"), d = li.querySelector(".d");
+      const textOf = el => [...el.childNodes].filter(x=>!(x.classList&&x.classList.contains("num"))).map(x=>x.textContent).join("").trim();
+      t.onblur = ()=>{ const v = textOf(t); if (v && v!==it.t){ it.t=v; save(); } };
+      d.onblur = ()=>{ const v = d.textContent.trim(); if (v!==it.d){ it.d=v; save(); if(!v) d.innerHTML=""; } };
+      [t,d].forEach(el=>el.onkeydown = e=>{ if(e.key==="Enter" && el===t){ e.preventDefault(); el.blur(); } });
+      li.querySelector(".icon").onclick = ()=>{ if (confirmDelete(it)) { g.items = g.items.filter(x=>x!==it); save(); render(); } };
+      ul.appendChild(li);
+    });
+    sec.querySelector(".addrow").onsubmit = e=>{
+      e.preventDefault(); const inp = e.target.querySelector("input"); const v = inp.value.trim(); if(!v) return;
+      g.items.push({ id:uid(), t:v, d:"", done:false }); save(); render();
+      setTimeout(()=>{ const f=[...document.querySelectorAll(".addrow input")][state.indexOf(g)]; f && f.focus(); },0);
+    };
+    root.appendChild(sec);
+  });
+  const p = all? Math.round(done/all*100):0;
+  $("#pct").innerHTML = `${p}<small>%</small>`;
+  $("#totalbar").style.width = p+"%";
+  $("#countTxt").textContent = `${done} / ${all} kész`;
+}
+let lastDeleted = null;
+function confirmDelete(it){ lastDeleted = it; toast("Törölve: " + it.t.slice(0,40)); return true; }
+let tt; function toast(m){ const el=$("#toast"); el.textContent=m; el.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>el.classList.remove("show"),2200); }
+let st; function flash(){ const el=$("#saved"); el.textContent="Mentve ✓"; clearTimeout(st); st=setTimeout(()=>el.textContent="Mentve ebben a böngészőben",1500); }
+
+document.querySelectorAll(".chip[data-f]").forEach(b=>b.onclick=()=>{
+  filter=b.dataset.f; document.querySelectorAll(".chip[data-f]").forEach(x=>x.classList.toggle("on",x===b)); render();
+});
+$("#exportBtn").onclick = ()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = `deepfocus-teendok-${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(a.href);
+  toast("Letöltve — küldd el a társadnak");
+};
+$("#importBtn").onclick = ()=> $("#importFile").click();
+$("#importFile").onchange = async e=>{
+  const f = e.target.files[0]; if(!f) return;
+  try { const data = JSON.parse(await f.text()); if(!Array.isArray(data)) throw 0; state = withIds(data); save(); render(); toast("Betöltve ✓"); }
+  catch(err){ toast("Hibás fájl"); }
+  e.target.value = "";
+};
+let resetArmed = false;
+$("#resetBtn").onclick = ()=>{
+  if(!resetArmed){ resetArmed=true; $("#resetBtn").textContent="Biztos? Kattints újra"; setTimeout(()=>{resetArmed=false;$("#resetBtn").textContent="↺ Alaphelyzet";},3000); return; }
+  state = withIds(clone(DEFAULT)); save(); render(); resetArmed=false; $("#resetBtn").textContent="↺ Alaphelyzet"; toast("Visszaállítva");
+};
+
+state = load(); render();
+</script>
+</body>
+</html>
