@@ -137,6 +137,7 @@ const DEFAULT = [
     { t:"Közösségi profilok a cégadatokba", d:"Facebook, TikTok, YouTube, LinkedIn, Vimeo és Google Cégprofil linkjei.", who:"Infó: csapat · Kód: Claude" },
     { t:"20 új Tudástár-kérdés", d:"Social media, reklámfilm, AI-videó, branding — témánként 5. Kell: social szerződési idő és havi mennyiség, reklámfilm javítási körök és felvétel-tulajdon, arculat logóváltozatok száma.", who:"Infó: csapat · Kód: Claude" },
     { t:"Nyitvatartás a cégadatokba", d:"Ha szeretnénk, hogy a Google-ben is látszódjon.", who:"Infó: csapat · Kód: Claude" },
+    { id:"clarity", t:"Látogatottság-mérés: Microsoft Clarity + saját IP kizárása", d:"Hőtérkép, görgetés, kattintások, új vs. visszatérő látogatók. A saját IP-címünkről jövő forgalmat kizárjuk, így tisztán látszik, hány valódi érdeklődő jön. Kell: Clarity-regisztráció és projektazonosító, irodai/otthoni IP-címek.", who:"Infó: csapat · Kód: Claude" },
   ]},
   { id:"g3", color:"var(--yellow)", title:"Mobilnézet", sub:"Szüneteltetve — a lapozós szolgáltatás-rész nem kell", items:[
     { t:"Hero: jobban olvasható szöveg a videó fölött", d:"" },
@@ -170,8 +171,20 @@ function withIds(groups){ groups.forEach(g=>g.items.forEach(i=>{ i.id ||= uid();
 
 let state, filter = "all";
 function load(){
-  try { const s = localStorage.getItem(KEY); if (s) return JSON.parse(s); } catch(e){}
+  try { const s = localStorage.getItem(KEY); if (s) return mergeNew(JSON.parse(s)); } catch(e){}
   return withIds(clone(DEFAULT));
+}
+/* Később hozzáadott (fix id-s) alapteendők bekerülnek a már elmentett listába is. */
+function mergeNew(saved){
+  let seen = [];
+  try { seen = JSON.parse(localStorage.getItem(KEY+"-seen") || "[]"); } catch(e){}
+  DEFAULT.forEach(dg=>{
+    const g = saved.find(x=>x.id===dg.id); if(!g) return;
+    dg.items.filter(i=>i.id && !seen.includes(i.id) && !g.items.some(x=>x.id===i.id))
+      .forEach(i=>{ g.items.push({ ...clone(i), done:false }); seen.push(i.id); });
+  });
+  try { localStorage.setItem(KEY+"-seen", JSON.stringify(seen)); localStorage.setItem(KEY, JSON.stringify(saved)); } catch(e){}
+  return saved;
 }
 function save(){
   try { localStorage.setItem(KEY, JSON.stringify(state)); flash("saved"); } catch(e){ document.getElementById("saved").textContent = "Nem sikerült menteni"; }
