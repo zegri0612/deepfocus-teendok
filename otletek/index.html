@@ -72,6 +72,9 @@ button{cursor:pointer;border-radius:8px;border:1px solid var(--line2);background
 .frame{position:relative;width:100%;border-radius:10px;overflow:hidden;background:#000}
 .frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .h169{padding-top:56.25%}.h916{padding-top:178%}
+.cwrap{padding:0 12px 12px;cursor:default}
+.cwrap .thread{margin-top:0}
+.cwrap .cform .btn{padding:8px 10px}
 .cbtn{border:none;padding:4px 8px;font-size:12px;color:var(--sub);display:inline-flex;gap:5px;align-items:center;border-radius:20px;background:var(--line)}
 .cbtn:hover{color:var(--acc)}
 .thread{margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
@@ -280,6 +283,7 @@ function render(){
           </div>
           <div class="cb"><div style="flex:1;min-width:0"><div class="ct">${esc(x.title||x.short)}</div><div class="cs">${esc(x.by?'beküldte: '+x.by:x.short)}${ccount(x.comments)?` · <i class="ti ti-message-circle"></i> ${ccount(x.comments)}`:''}</div></div>
             <div class="act">${votes(p.k,`${p.k}/links/${id}/votes`,x.votes)}</div></div>
+          <div class="cwrap">${thread(`${p.k}/links/${id}`,x.comments)}</div>
         </div>`}).join('')}</div>`:`<div class="empty">Még nincs videó. Illessz be egy vagy több linket lent.</div>`}
       <div class="add"><textarea id="l-${p.k}" placeholder="Illessz be egy vagy több linket (soronként egyet)&#10;https://www.tiktok.com/@…/video/…&#10;https://www.instagram.com/reel/…"></textarea>
         <button class="btn" data-addlinks="${p.k}"><i class="ti ti-link"></i> Kártyák</button></div>
@@ -292,6 +296,7 @@ function render(){
 const myName=()=> (PEOPLE.find(p=>p.k===me)||{}).n||'';
 document.addEventListener('click',e=>{
   const t=e.target.closest('button,[data-open]'); if(!t)return;
+  if(t.dataset.open&&e.target.closest('.cwrap'))return;
   if(t.dataset.vote){
     e.stopPropagation();
     if(me!==t.dataset.who){alert(me?'Ezt a gombot csak '+PEOPLE.find(p=>p.k===t.dataset.who).n+' nyomhatja meg.':'Előbb válaszd ki fent, ki vagy.');return}
