@@ -67,6 +67,21 @@ button{cursor:pointer;border-radius:8px;border:1px solid var(--line2);background
 .frame{position:relative;width:100%;border-radius:10px;overflow:hidden;background:#000}
 .frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .h169{padding-top:56.25%}.h916{padding-top:178%}
+.cbtn{border:none;padding:4px 8px;font-size:12px;color:var(--sub);display:inline-flex;gap:5px;align-items:center;border-radius:20px;background:var(--line)}
+.cbtn:hover{color:var(--acc)}
+.thread{margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+.cm{display:flex;gap:9px;margin-top:8px}
+.cav{width:26px;height:26px;border-radius:50%;background:var(--line2);color:var(--txt);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0}
+.cav.own{background:var(--acc);color:#0b0b0d}
+.cbody{flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.chead{font-size:11px;color:var(--mut);display:flex;gap:8px;align-items:center}
+.chead b{color:var(--sub);font-weight:500}
+.ctext{font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word;margin-top:2px}
+.cdelx{margin-left:auto;border:none;padding:0;color:var(--mut);font-size:13px}
+.cdelx:hover{color:var(--red)}
+.cform{display:flex;gap:8px;margin-top:10px}
+.cform input{flex:1;padding:8px 10px;font-size:13px}
+.cform .btn{padding:8px 12px}
 .mf{display:flex;justify-content:flex-end;margin-top:10px}
 .mf a{color:var(--acc);font-size:13px;text-decoration:none;display:inline-flex;gap:6px;align-items:center}
 @media(max-width:600px){h1{font-size:26px}.idea{flex-wrap:wrap}.act{margin-left:0}.add{flex-direction:column}.add .btn{width:100%;justify-content:center}}
@@ -206,7 +221,27 @@ function votes(owner,path,v){
     const on=v&&v[p.k], mine=me===p.k;
     return `<button class="vote ${on?'on':''} ${mine?'':'lock'}" title="${p.n} ${on?'tetszik neki':'még nem értékelte'}${mine?'':' – csak '+p.n+' kattinthat'}" data-vote="${path}" data-who="${p.k}">${p.k}</button>`;
   }).join('');
+  if(openPath){const x=getPath(openPath),mc=document.getElementById('mcom'); if(!x)closePlayer(); else if(mc) mc.innerHTML=thread(openPath,x.comments)}
+  if(focusDraft){const el=document.querySelector(`[data-draft="${focusDraft}"]`); if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length)}}
 }
+let openPath=null, focusDraft=null;
+document.addEventListener('input',e=>{const d=e.target.dataset.draft; if(d){drafts[d]=e.target.value; focusDraft=d}});
+document.addEventListener('focusin',e=>{focusDraft=e.target.dataset.draft||null});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset.draft){e.preventDefault();sendComment(e.target.dataset.draft)}});
+function sendComment(path){
+  if(!me){alert('Előbb válaszd ki fent, ki vagy.');return}
+  const t=(drafts[path]||'').trim(); if(!t)return;
+  drafts[path]=''; store.push(path+'/comments',{who:me,text:t,ts:Date.now()});
+}
+const openTh=new Set(), drafts={};
+const nameOf=k=>(PEOPLE.find(p=>p.k===k)||{}).n||k;
+function fmt(ts){const d=new Date(ts);return d.toLocaleDateString('hu-HU',{month:'short',day:'numeric'})+' '+d.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}
+function thread(path,comments){
+  const list=sorted(comments);
+  return `<div class="thread">${list.length?list.map(([cid,c])=>`<div class="cm"><div class="cav ${c.who===me?'own':''}">${esc(c.who)}</div><div class="cbody"><div class="chead"><b>${esc(nameOf(c.who))}</b><span>${fmt(c.ts)}</span>${c.who===me?`<button class="cdelx" title="Komment törlése" data-cdel="${path}/comments/${cid}"><i class="ti ti-x"></i></button>`:''}</div><div class="ctext">${esc(c.text)}</div></div></div>`).join(''):'<div class="cs">Még nincs komment. Írd meg az elsőt.</div>'}
+  <div class="cform"><input data-draft="${path}" value="${esc(drafts[path]||'')}" placeholder="${me?'Írj kommentet…':'Előbb válaszd ki fent, ki vagy'}"><button class="btn" data-comment="${path}"><i class="ti ti-send"></i></button></div></div>`;
+}
+const ccount=c=>Object.keys(c||{}).length;
 function render(){
   document.getElementById('banner').innerHTML = useFB ? '' :
     `<div class="banner"><i class="ti ti-alert-triangle"></i> Helyi mód: az adatok csak ebben a böngészőben mentődnek. A közös használathoz másold be a Firebase adatokat az index.html elejére.</div>`;
@@ -219,7 +254,8 @@ function render(){
       ${ideas.length?ideas.map(([id,x])=>`<div class="idea">
           <i class="ti ti-${x.type==='Forgatókönyv'?'movie':'bulb'} ic"></i>
           <div style="flex:1;min-width:0"><div class="t">${esc(x.text)}</div>
-            <div class="meta"><span class="tag">${esc(x.type)}</span>${x.by?`<span class="cs">beküldte: ${esc(x.by)}</span>`:''}</div></div>
+            <div class="meta"><span class="tag">${esc(x.type)}</span>${x.by?`<span class="cs">beküldte: ${esc(x.by)}</span>`:''}<button class="cbtn" data-toggle="${p.k}/ideas/${id}"><i class="ti ti-message-circle"></i> ${ccount(x.comments)||''} ${ccount(x.comments)?'komment':'Kommentelés'}</button></div>
+            ${openTh.has(`${p.k}/ideas/${id}`)?thread(`${p.k}/ideas/${id}`,x.comments):''}</div>
           <div class="act">${votes(p.k,`${p.k}/ideas/${id}/votes`,x.votes)}<button class="del" title="Törlés" data-del="${p.k}/ideas/${id}"><i class="ti ti-trash"></i></button></div>
         </div>`).join(''):`<div class="empty">Még nincs ötlet. Írd be az elsőt lent.</div>`}
       <div class="add" style="flex-direction:column">
@@ -237,7 +273,7 @@ function render(){
             <button class="cdel" title="Törlés" data-del="${p.k}/links/${id}"><i class="ti ti-trash"></i></button>
             <span class="play"><i class="ti ti-${x.embed?'player-play':'external-link'}"></i></span>
           </div>
-          <div class="cb"><div style="flex:1;min-width:0"><div class="ct">${esc(x.title||x.short)}</div><div class="cs">${esc(x.by?'beküldte: '+x.by:x.short)}</div></div>
+          <div class="cb"><div style="flex:1;min-width:0"><div class="ct">${esc(x.title||x.short)}</div><div class="cs">${esc(x.by?'beküldte: '+x.by:x.short)}${ccount(x.comments)?` · <i class="ti ti-message-circle"></i> ${ccount(x.comments)}`:''}</div></div>
             <div class="act">${votes(p.k,`${p.k}/links/${id}/votes`,x.votes)}</div></div>
         </div>`}).join('')}</div>`:`<div class="empty">Még nincs videó. Illessz be egy vagy több linket lent.</div>`}
       <div class="add"><textarea id="l-${p.k}" placeholder="Illessz be egy vagy több linket (soronként egyet)&#10;https://www.tiktok.com/@…/video/…&#10;https://www.instagram.com/reel/…"></textarea>
@@ -257,6 +293,9 @@ document.addEventListener('click',e=>{
     const path=t.dataset.vote+'/'+me, cur=getPath(path);
     store.set(path,cur?null:true);return;
   }
+  if(t.dataset.toggle){const k=t.dataset.toggle; openTh.has(k)?openTh.delete(k):openTh.add(k); focusDraft=openTh.has(k)?k:null; render(); return;}
+  if(t.dataset.comment){ sendComment(t.dataset.comment); return; }
+  if(t.dataset.cdel){ e.stopPropagation(); if(confirm('Törlöd a kommentet?')) store.set(t.dataset.cdel,null); return; }
   if(t.dataset.del){
     e.stopPropagation();
     if(confirm('Biztosan törlöd?')) store.set(t.dataset.del,null);return;
@@ -284,16 +323,17 @@ async function addLinks(k){
 }
 function openPlayer(path){
   const x=getPath(path); if(!x)return;
-  if(!x.embed){window.open(x.url,'_blank','noopener');return}
+  openPath=path;
   const q=P[x.pl]||P.other, modal=document.getElementById('modal');
   modal.className='modal'+(x.vertical?' v':'');
   modal.innerHTML=`<div class="mh"><span class="tag"><i class="ti ti-${q.ic}"></i> ${q.n}</span><div class="t">${esc(x.title||x.short)}</div><button id="cls" title="Bezárás"><i class="ti ti-x"></i></button></div>
-    <div class="frame ${x.vertical?'h916':'h169'}"><iframe src="${esc(x.embed)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
-    <div class="mf"><a href="${esc(x.url)}" target="_blank" rel="noopener">Megnyitás itt: ${q.n} <i class="ti ti-external-link"></i></a></div>`;
+    ${x.embed?`<div class="frame ${x.vertical?'h916':'h169'}"><iframe src="${esc(x.embed)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>`:''}
+    <div class="mf"><a href="${esc(x.url)}" target="_blank" rel="noopener">Megnyitás itt: ${q.n} <i class="ti ti-external-link"></i></a></div>
+    <div class="lbl" style="margin-top:6px">Kommentek</div><div id="mcom">${thread(path,x.comments)}</div>`;
   document.getElementById('ov').classList.add('show');
   document.getElementById('cls').onclick=closePlayer;
 }
-function closePlayer(){document.getElementById('ov').classList.remove('show');document.getElementById('modal').innerHTML=''}
+function closePlayer(){openPath=null;document.getElementById('ov').classList.remove('show');document.getElementById('modal').innerHTML=''}
 document.getElementById('ov').addEventListener('click',e=>{if(e.target.id==='ov')closePlayer()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePlayer()});
 
