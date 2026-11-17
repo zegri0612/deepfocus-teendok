@@ -173,7 +173,7 @@ async function fetchMeta(url,info){
   try{
     if(info.pl==='tiktok'){
       const r=await fetch('https://www.tiktok.com/oembed?url='+encodeURIComponent(url));
-      if(r.ok){const j=await r.json();return {title:j.title||j.author_name,thumb:j.thumbnail_url}}
+      if(r.ok){const j=await r.json();const vid=j.embed_product_id||(j.html||'').match(/data-video-id="(\d+)"/)?.[1];return {title:j.title||j.author_name,thumb:j.thumbnail_url,embed:vid?`https://www.tiktok.com/embed/v2/${vid}`:null}}
     }
     if(info.pl==='youtube'||info.pl==='vimeo'){
       const r=await fetch('https://noembed.com/embed?url='+encodeURIComponent(url));
@@ -331,7 +331,7 @@ async function addLinks(k){
   for(const [url,info] of good){
     const short=url.replace(/^https?:\/\/(www\.)?/,'').slice(0,40);
     const id=store.push(k+'/links',{url,short,pl:info.pl,embed:info.embed||null,vertical:!!info.vertical,thumb:info.thumb||null,by:myName(),ts:Date.now()});
-    fetchMeta(url,info).then(meta=>{ if(meta.title||meta.thumb) store.update(k+'/links/'+id,{title:meta.title||null,thumb:meta.thumb||info.thumb||null}) });
+    fetchMeta(url,info).then(meta=>{ const u={}; if(meta.title)u.title=meta.title; if(meta.thumb||info.thumb)u.thumb=meta.thumb||info.thumb; if(meta.embed&&!info.embed)u.embed=meta.embed; if(Object.keys(u).length) store.update(k+'/links/'+id,u) });
   }
   render();
 }
@@ -351,7 +351,12 @@ function closePlayer(){openPath=null;document.getElementById('ov').classList.rem
 document.getElementById('ov').addEventListener('click',e=>{if(e.target.id==='ov')closePlayer()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePlayer()});
 
-store.init(render);
+let repaired=false;
+function repair(){ if(repaired)return; repaired=true;
+  for(const p of PEOPLE) for(const [id,x] of Object.entries((state[p.k]||{}).links||{}))
+    if(x.pl==='tiktok'&&!x.embed) fetchMeta(x.url,{pl:'tiktok'}).then(m=>{ const u={}; if(m.embed)u.embed=m.embed; if(m.thumb&&!x.thumb)u.thumb=m.thumb; if(m.title&&!x.title)u.title=m.title; if(Object.keys(u).length) store.update(p.k+'/links/'+id,u) });
+}
+store.init(()=>{render();repair()});
 </script>
 </body>
 </html>
