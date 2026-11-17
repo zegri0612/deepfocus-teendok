@@ -37,8 +37,13 @@ button{cursor:pointer;border-radius:8px;border:1px solid var(--line2);background
 .meta{display:flex;gap:6px;align-items:center;margin-top:7px;flex-wrap:wrap}
 .tag{font-size:11px;padding:2px 9px;border-radius:20px;background:var(--line);color:var(--sub)}
 .act{display:flex;gap:6px;margin-left:auto;flex-shrink:0;align-items:center}
-.vote{width:32px;height:32px;padding:0;border-radius:50%;font-size:11px;font-weight:500;color:var(--sub)}
-.vote.on{background:var(--acc);color:#0b0b0d;border-color:var(--acc)}
+.vote{width:34px;height:32px;padding:0;border:none;background:none;position:relative;display:inline-flex;align-items:center;justify-content:center;transition:transform .12s}
+.vote:hover{transform:scale(1.1)}
+.vote svg{position:absolute;inset:0;width:100%;height:100%}
+.vote svg path{fill:none;stroke:var(--line2);stroke-width:1.6}
+.vote.on svg path{fill:#ff3d6e;stroke:#ff3d6e}
+.vote span{position:relative;font-size:11px;font-weight:600;color:var(--sub);margin-top:-2px}
+.vote.on span{color:#fff}
 .vote.lock{cursor:default;opacity:.75}
 .del{width:30px;height:30px;padding:0;border:none;color:var(--mut);font-size:17px}
 .del:hover{color:var(--red)}
@@ -219,7 +224,7 @@ function sorted(obj){return Object.entries(obj||{}).sort((a,b)=>(a[1].ts||0)-(b[
 function votes(owner,path,v){
   return PEOPLE.filter(p=>p.k!==owner).map(p=>{
     const on=v&&v[p.k], mine=me===p.k;
-    return `<button class="vote ${on?'on':''} ${mine?'':'lock'}" title="${p.n} ${on?'tetszik neki':'még nem értékelte'}${mine?'':' – csak '+p.n+' kattinthat'}" data-vote="${path}" data-who="${p.k}">${p.k}</button>`;
+    return `<button class="vote ${on?'on':''} ${mine?'':'lock'}" title="${p.n} ${on?'tetszik neki':'még nem értékelte'}${mine?'':' – csak '+p.n+' kattinthat'}" data-vote="${path}" data-who="${p.k}"><svg viewBox="0 0 24 22"><path d="M12 20.5s-8.5-5.2-8.5-11.3A4.7 4.7 0 0 1 12 6.4a4.7 4.7 0 0 1 8.5 2.8C20.5 15.3 12 20.5 12 20.5z"/></svg><span>${p.n[0]}</span></button>`;
   }).join('');
   if(openPath){const x=getPath(openPath),mc=document.getElementById('mcom'); if(!x)closePlayer(); else if(mc) mc.innerHTML=thread(openPath,x.comments)}
   if(focusDraft){const el=document.querySelector(`[data-draft="${focusDraft}"]`); if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length)}}
