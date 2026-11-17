@@ -337,6 +337,12 @@ async function addLinks(k){
 }
 function openPlayer(path){
   const x=getPath(path); if(!x)return;
+  if(x.pl==='tiktok'){
+    const w=420,h=760,l=Math.max(0,(window.screenX||0)+window.outerWidth-w-40),t=Math.max(0,(window.screenY||0)+60);
+    const pop=window.open(x.url,'df-tiktok',`popup=yes,width=${w},height=${h},left=${l},top=${t}`);
+    if(!pop) window.open(x.url,'_blank','noopener');
+    return;
+  }
   openPath=path;
   const q=P[x.pl]||P.other, modal=document.getElementById('modal');
   modal.className='modal'+(x.vertical?' v':'');
