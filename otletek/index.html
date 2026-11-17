@@ -98,8 +98,8 @@ button{cursor:pointer;border-radius:8px;border:1px solid var(--line2);background
 const firebaseConfig = {
   apiKey: "",
   authDomain: "",
-  databaseURL: "",
-  projectId: "",
+  databaseURL: "https://deepfocus-otletek-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "deepfocus-otletek",
   appId: ""
 };
 </script>
@@ -160,7 +160,7 @@ async function fetchMeta(url,info){
 
 /* ---------- Tárolás: Firebase vagy helyi ---------- */
 let state={}; const listeners=[];
-const useFB=!!(firebaseConfig.apiKey&&firebaseConfig.databaseURL);
+const useFB=!!firebaseConfig.databaseURL;
 let db=null;
 const LS='df-otletek-v1';
 function lsSave(){localStorage.setItem(LS,JSON.stringify(state))}
