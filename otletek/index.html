@@ -75,6 +75,8 @@ button{cursor:pointer;border-radius:8px;border:1px solid var(--line2);background
 .cwrap{padding:0 12px 12px;cursor:default}
 .cwrap .thread{margin-top:0}
 .cwrap .cform .btn{padding:8px 10px}
+.t.clamp{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;position:relative}
+.more{border:none;padding:4px 0;margin-top:4px;font-size:12px;color:var(--acc);display:inline-flex;gap:4px;align-items:center;background:none}
 .cbtn{border:none;padding:4px 8px;font-size:12px;color:var(--sub);display:inline-flex;gap:5px;align-items:center;border-radius:20px;background:var(--line)}
 .cbtn:hover{color:var(--acc)}
 .thread{margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
@@ -241,7 +243,8 @@ function sendComment(path){
   const t=(drafts[path]||'').trim(); if(!t)return;
   drafts[path]=''; store.push(path+'/comments',{who:me,text:t,ts:Date.now()});
 }
-const openTh=new Set(), drafts={};
+const openTh=new Set(), openTx=new Set(), drafts={};
+const isLong=t=>(t||'').length>240||(t||'').split('\n').length>5;
 const nameOf=k=>(PEOPLE.find(p=>p.k===k)||{}).n||k;
 function fmt(ts){const d=new Date(ts);return d.toLocaleDateString('hu-HU',{month:'short',day:'numeric'})+' '+d.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}
 function thread(path,comments){
@@ -261,7 +264,7 @@ function render(){
       <div class="sub"><div class="lbl">Ötletek</div>
       ${ideas.length?ideas.map(([id,x])=>`<div class="idea">
           <i class="ti ti-${x.type==='Forgatókönyv'?'movie':'bulb'} ic"></i>
-          <div style="flex:1;min-width:0"><div class="t">${esc(x.text)}</div>
+          <div style="flex:1;min-width:0"><div class="t ${isLong(x.text)&&!openTx.has(id)?'clamp':''}">${esc(x.text)}</div>${isLong(x.text)?`<button class="more" data-expand="${id}"><i class="ti ti-chevron-${openTx.has(id)?'up':'down'}"></i> ${openTx.has(id)?'Összecsukás':'Teljes szöveg'}</button>`:''}
             <div class="meta"><span class="tag">${esc(x.type)}</span>${x.by?`<span class="cs">beküldte: ${esc(x.by)}</span>`:''}<button class="cbtn" data-toggle="${p.k}/ideas/${id}"><i class="ti ti-message-circle"></i> ${ccount(x.comments)||''} ${ccount(x.comments)?'komment':'Kommentelés'}</button></div>
             ${openTh.has(`${p.k}/ideas/${id}`)?thread(`${p.k}/ideas/${id}`,x.comments):''}</div>
           <div class="act">${votes(p.k,`${p.k}/ideas/${id}/votes`,x.votes)}<button class="del" title="Törlés" data-del="${p.k}/ideas/${id}"><i class="ti ti-trash"></i></button></div>
@@ -303,6 +306,7 @@ document.addEventListener('click',e=>{
     const path=t.dataset.vote+'/'+me, cur=getPath(path);
     store.set(path,cur?null:true);return;
   }
+  if(t.dataset.expand){const k=t.dataset.expand; openTx.has(k)?openTx.delete(k):openTx.add(k); render(); return;}
   if(t.dataset.toggle){const k=t.dataset.toggle; openTh.has(k)?openTh.delete(k):openTh.add(k); focusDraft=openTh.has(k)?k:null; render(); return;}
   if(t.dataset.comment){ sendComment(t.dataset.comment); return; }
   if(t.dataset.cdel){ e.stopPropagation(); if(confirm('Törlöd a kommentet?')) store.set(t.dataset.cdel,null); return; }
