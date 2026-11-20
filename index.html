@@ -129,6 +129,27 @@
 <script>
 const KEY = "deepfocus-todo-v1";
 const DEFAULT = [
+  { id:"gmob", color:"var(--neon)", title:"Mobilnézet javítás – főoldal", sub:"2026. 11. 20-i átnézés · cél: ~17 helyett ~10–11 képernyő, tartalomvesztés nélkül", items:[
+    { id:"m01", t:"Szolgáltatás-kártyák rövidítése (A vagy B változat)", d:"Most mind az 5 kártya teljes hosszában egymás alatt van (nagy kép, leírás, 3 pont, világító gomb), ez kb. 4 000 px, vagyis 5 képernyő – mire a látogató a végére ér, elfelejti az elsőt. A) Lenyíló kártyák: zárt állapotban 90–110 px-es sor kis képpel, címmel és egy rövid sorral (pl. „Reels, TikTok, Shorts – 60 000 Ft-tól”), koppintásra nyílik a többi; az 5 szolgáltatás egy képernyőn átlátható. B) Kép felül, alacsonyabb képsávval, alatta cím + 1 mondat, a pontok és a gomb egy „Bővebben ⌄” sorra nyílnak; megmarad a filmes hatás, kb. 2 képernyő. (Másik két lehetőség volt: lapozós kártyák – ezt korábban elvetettük – és fülek/szűrőgombok.) Javaslat: A vagy B, vagy a kettő keveréke: zárt állapotban alacsony képsáv + cím, ezt nyitja le a látogató.", who:"Claude (kód)" },
+    { id:"m02", t:"Árak beolvasztása a szolgáltatásokba", d:"Az Árak blokk kb. 2 képernyő, és ugyanazt az 5 szolgáltatást ismétli ugyanabban a sorrendben. Ha a kezdőár bekerül a szolgáltatás-kártyák zárt sorába (lásd az A változatot), a külön árblokk elhagyható vagy egy kompakt listává (soronként név · ár · nyíl) rövidíthető. Ez a legnagyobb rövidítési lehetőség. A „Minden ár nettó” megjegyzés legyen közvetlenül a számok mellett, ne kicsi szürke sorban alattuk.", who:"Claude (kód)" },
+    { id:"m03", t:"Szóközhibák javítása az idézetben", d:"A „A márkád történetét úgy visszük tovább…” blokkban két helyen hiányzik a szóköz: „lenne.Nem” és „olyantörténeteket”. Ez élesben is látszik, és rontja az igényes benyomást – gyors javítás.", who:"Claude (kód)" },
+    { id:"m04", t:"Idézet blokk rövidebb, balra zárt változatban", d:"A nagy, középre zárt, mono betűs idézet mobilon 8–9 sor, ezért nehéz olvasni. Rövidebb, balra zárt változat kell, legfeljebb 4–5 sorban, hogy egy pillantással befogadható legyen.", who:"Claude (kód)" },
+    { id:"m05", t:"Kevesebb világító pink gomb", d:"Az oldalon 8–10 világító pink gomb van, így egyik sem emelkedik ki. Csak az ajánlatkérés gombjai világítsanak; a „…részletei” gombok és a „Nézd meg a munkáinkat” legyenek visszafogott, nyilas szöveglinkek. Így a fő lépés (ajánlatkérés) egyértelmű lesz.", who:"Claude (kód)" },
+    { id:"m06", t:"„Kérdezz tőlünk” buborék ritkítása mobilon", d:"Mobilon a buborék 25 másodpercenként rácsúszik a tartalomra (pl. a kártyacímekre: „Short for…” takarva), ez a legzavaróbb apróság. Javaslat: mobilon csak 1–2 alkalommal jelenjen meg, vagy csak akkor, amikor a látogató épp nem görget. Asztali gépen maradhat a mostani ütem.", who:"Claude (kód)" },
+    { id:"m07", t:"Fix elemek kevesebb helyet foglaljanak", d:"Mobilon egyszerre három elem marad végig a képernyőn: fejléc, alsó sáv (HU/EN · Hívás · Ajánlatkérés) és a pontgömb – együtt a képernyő kb. negyede. Javaslat: a nyelvváltó kerüljön a menübe, így az alsó sávban csak a két gomb marad; a fejléc lefelé görgetéskor húzódjon fel, felfelé görgetéskor jöjjön vissza.", who:"Claude (kód)" },
+    { id:"m08", t:"Hero: olvashatóbb szöveg a videón", d:"A kis szürke leírás a mozgó videón nehezen olvasható. A szöveg alá sötétebb átmenet kell (vagy világosabb, nagyobb betű), hogy minden videókockán olvasható maradjon.", who:"Claude (kód)" },
+    { id:"m09", t:"Hero: egy fő gomb legyen", d:"A fehér „Kérj ajánlatot” és a pink, világító „Nézd meg a munkáinkat” egyformán hangos, ezért a látogató nem tudja, mi a fő lépés. A második legyen visszafogott szöveges link, így az ajánlatkérés lesz a fő lépés.", who:"Claude (kód)" },
+    { id:"m10", t:"Apró feliratok nagyobbak", d:"A „REC · BUDAPEST” címke 10 px-es, a sorszámok és címkék 10–12 px-esek – mobilon túl kicsik. Legalább 12–13 px kell, hogy kényelmesen olvashatók legyenek.", who:"Claude (kód)" },
+    { id:"m11", t:"Számlálók azonnal a végleges számot mutassák", d:"A 40+, 1200+, 400+, +50% görgetés közben számlálódnak fel, és ilyenkor félkész, „karcos” számok látszanak. Mobilon jobb, ha rögtön a végleges szám jelenik meg (asztalin maradhat az animáció).", who:"Claude (kód)" },
+    { id:"m12", t:"„+50%” mellé időszak és alap", d:"A „+50% átlagos elérésnövekedés” mellől hiányzik, hogy mihez képest és milyen időszakban. A marketingszabályaitok szerint ez csak időszakkal és alappal közölhető, különben hiteltelen. Vagy pontosítsuk, vagy cseréljük másik számra.", who:"Claude (kód)" },
+    { id:"m13", t:"Referenciák feljebb + jelző és „Összes munka” link", d:"A lapozható videókártyák jók, de nincs jelző (hány kártya van), és nincs „Összes munka →” link a sor végén. Ráadásul a referenciák az 5 képernyős szolgáltatásblokk után jönnek – ha feljebb kerülnek, a látogató hamarabb lát bizonyítékot.", who:"Claude (kód)" },
+    { id:"m14", t:"Partnerlogók feljebb", d:"A logósáv elveszik az árak és a munkafolyamat között. Közvetlenül a hero vagy a számok alatt több bizalmat adna, mert a látogató rögtön látja, kik dolgoztak már veletek.", who:"Claude (kód)" },
+    { id:"m15", t:"Munkafolyamat idővonalként", d:"Az 5 lépés sok szöveggel, kb. 2 képernyő, és minden lépés egyformán hangsúlyos. Javaslat: függőleges idővonal rövid címekkel és egymondatos leírással, a részletek koppintásra nyílnak; ide kiválóan illene egy-egy kis werkfotó vagy ikon.", who:"Claude (kód)" },
+    { id:"m16", t:"GYIK: első 5 kérdés + „Még 8 kérdés”", d:"13 kérdés egyszerre sok. Az első 5 látszódjon, a többi egy „Még 8 kérdés” gombra nyíljon le, mellette a Tudástár linkkel. (Az „UFO-kkal is dolgoztok? 🛸” maradjon, jól oldja a hangulatot.)", who:"Claude (kód)" },
+    { id:"m17", t:"Ajánlatkérő kérdőív kompaktabb csempékkel", d:"A lépésenkénti kérdezés jó, de a választható kártyák nagy képesek, így egy lépés is több képernyő mobilon. Javaslat: kisebb, kétoszlopos csempék vagy egyszerű jelölőgombok kis ikonnal. A „Kihagyom” gomb most pink és világít, ezért fontosabbnak tűnik, mint a választás – legyen visszafogott szöveges link.", who:"Claude (kód)" },
+    { id:"m18", t:"Lábléc rövidebb, egységes szolgáltatásnevekkel", d:"A lábléc mobilon kb. 2 képernyő, mert az „Oldalak” és a „Szolgáltatások” listák hosszúak, és a nyelvváltó kétszer szerepel. Javaslat: lenyíló csoportok. A szolgáltatásnevek is térjenek el kevésbé: itt „Short Form Tartalomgyártás”, „Social Media & Hirdetésmenedzsment”, máshol „Short form videógyártás”, „Social media kezelés” – mindenhol ugyanaz a név kell.", who:"Claude (kód)" },
+    { id:"m19", t:"Nagyobb kattintható felületek", d:"A logósáv linkjei 29 px magasak, a javasolt minimum 44 px, hogy ujjal is könnyű legyen eltalálni őket. Ugyanez vonatkozik a többi kis linkre is.", who:"Claude (kód)" }
+  ]},
   { id:"g1", color:"var(--red)", title:"Most rögtön", sub:"A mai munka élesítése", items:[
     { t:"Publish a Lovable-ben", d:"Élesedik: képoptimalizálás, kódtakarítás, rejtett árak, llms.txt.", who:"Csapat" },
     { t:"Google-ellenőrzés a Publish után", d:"Rich Results Test: jól olvassa-e a Google az árakat és a cégadatokat.", who:"Claude" },
@@ -179,8 +200,9 @@ function load(){
 function mergeNew(saved){
   let seen = [];
   try { seen = JSON.parse(localStorage.getItem(KEY+"-seen") || "[]"); } catch(e){}
-  DEFAULT.forEach(dg=>{
-    const g = saved.find(x=>x.id===dg.id); if(!g) return;
+  DEFAULT.forEach((dg,idx)=>{
+    let g = saved.find(x=>x.id===dg.id);
+    if(!g){ g = { ...clone(dg), items:[] }; saved.splice(Math.min(idx, saved.length), 0, g); }
     dg.items.filter(i=>i.id && !seen.includes(i.id) && !g.items.some(x=>x.id===i.id))
       .forEach(i=>{ g.items.push({ ...clone(i), done:false }); seen.push(i.id); });
   });
