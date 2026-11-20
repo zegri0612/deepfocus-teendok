@@ -103,7 +103,7 @@
     <div class="big" id="pct">0<small>%</small></div>
     <div>
       <div class="bar"><span id="totalbar" style="width:0"></span></div>
-      <div class="meta"><span id="countTxt">0 / 0 kész</span><span id="saved">Mentve ebben a böngészőben</span></div>
+      <div class="meta"><span id="countTxt">0 / 0 kész</span><span id="saved">Kapcsolódás a közös listához…</span></div>
     </div>
   </div>
 
@@ -120,11 +120,13 @@
   <main id="groups"></main>
 
   <footer>
-    A pipák és szerkesztések ebben a böngészőben mentődnek. Ha a társadnak is át akarod adni az állapotot: <code>⤓ Mentés fájlba</code>, küldd el neki a fájlt, ő pedig <code>⤒ Betöltés</code>.
+    A lista közös: minden pipa, új teendő és törlés azonnal megjelenik mindenkinél, aki ezt az oldalt megnyitja. A <code>⤓ Mentés fájlba</code> biztonsági mentés; az <code>↺ Alaphelyzet</code> mindenkinél visszaállítja a listát.
   </footer>
 </div>
 <div class="toast" id="toast"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 const KEY = "deepfocus-todo-v1";
 const DEFAULT = [
@@ -192,24 +194,75 @@ function withIds(groups){ groups.forEach(g=>g.items.forEach(i=>{ i.id ||= uid();
 
 let state, filter = "all";
 function load(){
-  try { const s = localStorage.getItem(KEY); if (s) return mergeNew(JSON.parse(s)); } catch(e){}
+  try { const s = localStorage.getItem(KEY); if (s) { const m = mergeNew(JSON.parse(s)); delete m.__added; return m; } } catch(e){}
   return withIds(clone(DEFAULT));
 }
-/* Később hozzáadott (fix id-s) alapteendők bekerülnek a már elmentett listába is. */
+/* Később hozzáadott (fix id-s) alapteendők bekerülnek a már elmentett listába is.
+   A „seen” lista közös (Firebase), így egy egyszer törölt alapteendő senkinél nem jön vissza. */
+let seen = [];
+try { seen = JSON.parse(localStorage.getItem(KEY+"-seen") || "[]"); } catch(e){}
 function mergeNew(saved){
-  let seen = [];
-  try { seen = JSON.parse(localStorage.getItem(KEY+"-seen") || "[]"); } catch(e){}
+  let added = false;
   DEFAULT.forEach((dg,idx)=>{
     let g = saved.find(x=>x.id===dg.id);
-    if(!g){ g = { ...clone(dg), items:[] }; saved.splice(Math.min(idx, saved.length), 0, g); }
+    if(!g){ g = { ...clone(dg), items:[] }; saved.splice(Math.min(idx, saved.length), 0, g); added = true; }
     dg.items.filter(i=>i.id && !seen.includes(i.id) && !g.items.some(x=>x.id===i.id))
-      .forEach(i=>{ g.items.push({ ...clone(i), done:false }); seen.push(i.id); });
+      .forEach(i=>{ g.items.push({ ...clone(i), done:false }); seen.push(i.id); added = true; });
   });
-  try { localStorage.setItem(KEY+"-seen", JSON.stringify(seen)); localStorage.setItem(KEY, JSON.stringify(saved)); } catch(e){}
+  saved.__added = added;
   return saved;
 }
-function save(){
-  try { localStorage.setItem(KEY, JSON.stringify(state)); flash("saved"); } catch(e){ document.getElementById("saved").textContent = "Nem sikerült menteni"; }
+/* ---------- Közös tárolás: Firebase Realtime Database (deepfocus-otletek / teendok) ----------
+   Egy pipa mindenkinél azonnal látszik. A lista JSON-szövegként megy fel, mert a Firebase az üres
+   tömböket eldobná. Ha nincs net, a böngésző helyi másolata marad meg, és a következő mentéskor felmegy. */
+const firebaseConfig = {
+  databaseURL: "https://deepfocus-otletek-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "deepfocus-otletek"
+};
+let remote = null;
+const clientId = uid();
+function cacheLocal(){
+  try { localStorage.setItem(KEY, JSON.stringify(state)); localStorage.setItem(KEY+"-seen", JSON.stringify(seen)); } catch(e){}
+}
+function push(){
+  if(!remote) return;
+  remote.set({ json: JSON.stringify(state), seen: JSON.stringify(seen), by: clientId, at: Date.now() })
+    .then(()=>setStatus("Mentve ✓ — mindenkinél látszik", "Közös lista · élőben szinkronizál"))
+    .catch(()=>setStatus("Nem sikerült menteni a közösbe", null));
+}
+function save(){ cacheLocal(); push(); }
+let st; function setStatus(msg, after){
+  const el=$("#saved"); el.textContent=msg; clearTimeout(st);
+  if(after) st=setTimeout(()=>el.textContent=after,1500);
+}
+function startSync(){
+  try {
+    firebase.initializeApp(firebaseConfig);
+    remote = firebase.database().ref("teendok/" + (new URLSearchParams(location.search).get("lista") || "fo"));
+  } catch(e){ setStatus("Csak ebben a böngészőben ment (nincs kapcsolat)", null); return; }
+  firebase.database().ref(".info/connected").on("value", s=>{
+    if(s.val()===false) setStatus("Nincs kapcsolat — helyben mentve", null);
+  });
+  remote.on("value", snap=>{
+    const v = snap.val();
+    if(!v || !v.json){ try { localStorage.setItem(KEY+"-synced", "1"); } catch(e){} push(); return; } // első indulás: a mostani lista megy fel
+    try {
+      const remoteSeen = JSON.parse(v.seen || "[]");
+      seen = Array.from(new Set([...remoteSeen, ...seen]));
+      const next = mergeNew(JSON.parse(v.json));
+      let added = next.__added; delete next.__added;
+      // Első szinkron ebben a böngészőben: az itt korábban bepipált teendők ne vesszenek el.
+      if(!localStorage.getItem(KEY+"-synced")){
+        const localDone = new Set();
+        state.forEach(g=>g.items.forEach(i=>{ if(i.done) localDone.add(i.id); }));
+        next.forEach(g=>g.items.forEach(i=>{ if(localDone.has(i.id) && !i.done){ i.done = true; added = true; } }));
+        try { localStorage.setItem(KEY+"-synced", "1"); } catch(e){}
+      }
+      state = next; cacheLocal(); render();
+      setStatus("Közös lista · élőben szinkronizál", null);
+      if(added) push();
+    } catch(e){}
+  });
 }
 let closed = {};
 try { closed = JSON.parse(localStorage.getItem(KEY+"-closed") || "{}"); } catch(e){}
@@ -276,7 +329,6 @@ function render(){
 let lastDeleted = null;
 function confirmDelete(it){ lastDeleted = it; toast("Törölve: " + it.t.slice(0,40)); return true; }
 let tt; function toast(m){ const el=$("#toast"); el.textContent=m; el.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>el.classList.remove("show"),2200); }
-let st; function flash(){ const el=$("#saved"); el.textContent="Mentve ✓"; clearTimeout(st); st=setTimeout(()=>el.textContent="Mentve ebben a böngészőben",1500); }
 
 document.querySelectorAll(".chip[data-f]").forEach(b=>b.onclick=()=>{
   filter=b.dataset.f; document.querySelectorAll(".chip[data-f]").forEach(x=>x.classList.toggle("on",x===b)); render();
@@ -285,7 +337,7 @@ $("#exportBtn").onclick = ()=>{
   const blob = new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
   a.download = `deepfocus-teendok-${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(a.href);
-  toast("Letöltve — küldd el a társadnak");
+  toast("Letöltve (biztonsági mentés)");
 };
 $("#importBtn").onclick = ()=> $("#importFile").click();
 $("#importFile").onchange = async e=>{
@@ -300,7 +352,7 @@ $("#resetBtn").onclick = ()=>{
   state = withIds(clone(DEFAULT)); save(); render(); resetArmed=false; $("#resetBtn").textContent="↺ Alaphelyzet"; toast("Visszaállítva");
 };
 
-state = load(); render();
+state = load(); render(); startSync();
 </script>
 </body>
 </html>
